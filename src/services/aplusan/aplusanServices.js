@@ -22,4 +22,7 @@ export default {
   deleteMultiple(payload){
     return axios.delete(`/pendapatan`, payload)
   },
+  charts(){
+    return axios.get(`/pendapatan/charts`)
+  },  
 }
