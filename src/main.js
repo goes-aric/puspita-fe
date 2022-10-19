@@ -12,6 +12,7 @@ import id from '@vee-validate/i18n/dist/locale/id.json'
 import VCalendar from 'v-calendar'
 import VueProgressBar from "@aacassandra/vue3-progressbar"
 import Number from '@coders-tm/vue-number-format'
+import print from 'vue3-print-nb'
 import './assets/css/app.css'
 import './assets/css/custom.css'
 import 'vue-multiselect/dist/vue-multiselect.css'
@@ -54,5 +55,6 @@ app.use(Toast)
 app.use(VCalendar, {})
 app.use(VueProgressBar, options)
 app.use(Number, { precision: 4 })
+app.use(print)
 
 app.mount('#app')
