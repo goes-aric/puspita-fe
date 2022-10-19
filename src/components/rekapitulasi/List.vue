@@ -4,12 +4,7 @@
       <div class="w-full md:w-1/2 flex items-baseline gap-4">
         <h1 class="text-2xl bottom-0">Rekapitulasi Pendapatan Parkir</h1>
       </div>
-      <div class="flex items-center right-0 gap-2">
-        <!-- <button type="button" class="btn btn--primary flex" @click="toggleNew()">
-          <IconPlus />
-          <span class="ml-2 md:block hidden">Tambah</span>
-        </button> -->
-      </div>
+      <div class="flex items-center right-0 gap-2"></div>
     </div>
     <!-- FORM SECTION -->
     <div class="p-6 rounded-sm bg-white shadow-lg transition duration-150 ease-in">   
@@ -39,11 +34,24 @@
         </v-date-picker>
         <div class="flex -mt-4 gap-2">
           <button type="button" class="btn btn--primary" @click="runSearch()">Tampilkan</button>
-          <button type="button" class="btn btn--success" @click="runSearch()">Cetak</button> 
+          <button type="button" class="btn btn--success" v-print="printObj">Cetak</button> 
         </div>
       </div>      
       <!-- TABLE SECTION -->
-      <div class="bg-white rounded-sm overflow-y-auto">
+      <div id="canvasData" class="bg-white rounded-sm overflow-y-auto">
+        <div class="flex w-full border-b-2 border-gray-900 pb-2 mb-4 gap-2">
+          <div class="w-1/12">
+            <img :src="LogoSource" class="h-16 mx-auto">
+          </div>
+          <div class="w-11/12 text-center">
+            <h1 class="text-2xl uppercase">Perusahaan Umum Daerah Pasar Mangu Giri Sedana</h1>
+            <h1 class="text-2xl uppercase">Unit Pasar Umum Beringkit</h1>
+            <span>Jalan I Gusti Ngurah Rai Mengwi Badung</span>
+          </div>
+        </div>
+        <div v-if="filterDate.start" class="w-full">
+          <span class="text-sm">{{ tanggalAwal }} s/d {{ tanggalAkhir }}</span>
+        </div>
         <table>
           <thead>
             <tr>
@@ -72,7 +80,7 @@
           </tbody>                              
         </table>
       </div>
-    </div>
+    </div>  
   </div>
 </template>
 
@@ -88,6 +96,7 @@ import IconTrash from '../icons/IconTrash.vue'
 import IconEdit from '../icons/IconEdit.vue'
 import IconDateRange from '../icons/IconDateRange.vue'
 import Modal from '../widgets/Modal.vue'
+import Logo from '../../assets/images/logo.png'
 
 export default {
   name: 'RekapitulasiListPage',
@@ -133,8 +142,8 @@ export default {
         { field: 'updated_at', name: 'Tanggal Diedit' }
       ],
       filterDate: {
-        start: '',
-        end: ''
+        start: new Date(),
+        end: new Date()
       },
       masks: {
         input: 'YYYY/MM/DD',
@@ -174,7 +183,25 @@ export default {
         separator: ',',
         prefix: '',
         precision: 2,
-      }
+      },
+      printObj: {
+        id: "canvasData",
+        popTitle: 'Laporan Rekapitulasi Pendapatan Parkir',
+        beforeOpenCallback (vue) {
+          vue.printLoading = true
+          console.log('打开之前')
+        },
+        openCallback (vue) {
+          vue.printLoading = false
+          console.log('执行了打印')
+        },
+        closeCallback () {
+          console.log('关闭了打印工具')
+        }
+      },
+      LogoSource: Logo,
+      tanggalAwal: '',
+      tanggalAkhir: ''
     }
   },
   methods: {
@@ -305,6 +332,10 @@ export default {
     }    
   },
   watch: {
+    filterDate: function() {
+      this.tanggalAwal = this.filterDate.start ? dayjs(this.filterDate.start).format('DD MMM YYYY') : ''
+      this.tanggalAkhir = this.filterDate.end ? dayjs(this.filterDate.end).format('DD MMM YYYY') : ''
+    },
     '$route.query.take': {
       handler: function(take) {
         if (take) {
