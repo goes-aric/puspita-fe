@@ -39,8 +39,8 @@
             <tr>
               <th scope="col" class="text-left">Tanggal</th>
               <th scope="col" class="text-left">Nama Petugas</th>
-              <th scope="col" class="text-left">Total Pendapatan</th>
-              <th scope="col" class="text-left">Bukti</th>
+              <th scope="col" class="text-center">Total Pendapatan</th>
+              <th scope="col" class="text-center">Bukti</th>
               <th scope="col" class="text-center">Tindakan</th>
             </tr>
           </thead>
@@ -50,10 +50,10 @@
             <tr v-for="(pendapatan, index) in pendapatan" :key="pendapatan.id">
               <td class="text-left">{{ pendapatan.tanggal }}</td>
               <td class="text-left">{{ pendapatan.created_user }}</td>
-              <td class="text-left">Rp. {{ formatNumber(toFixed(pendapatan.grand_total, 0)) }}</td>
-              <td class="text-left">
+              <td class="text-right">Rp. {{ formatNumber(toFixed(pendapatan.grand_total, 0)) }}</td>
+              <td class="text-center">
                 <a :href="pendapatan.gambar" target="_blank">
-                  <img class="h-10" :src="pendapatan.gambar">
+                  <img class="h-10 mx-auto" :src="pendapatan.gambar">
                 </a>
               </td>
               <td class="text-center">
@@ -183,9 +183,9 @@
                 <tr v-if="pendapatanParkir.length == 0" class="border-b"><td class="py-3 px-6 text-sm text-center" colspan="5">Tidak ada data yang dapat ditampilkan</td></tr>
                 <tr v-for="(item, index) in pendapatanParkir" :key="item.id" class="border-b">
                   <td class="text-left">{{ item.jenis_kendaraan }}</td>
-                  <td class="text-right">{{ item.biaya_parkir }}</td>
-                  <td class="text-right">{{ item.jumlah_kendaraan }}</td>
-                  <td class="text-right">{{ item.jumlah_total }}</td>
+                  <td class="text-right">{{ this.formatNumber(this.toFixed(item.biaya_parkir, 0)) }}</td>
+                  <td class="text-right">{{ this.formatNumber(this.toFixed(item.jumlah_kendaraan, 0)) }}</td>
+                  <td class="text-right">{{ this.formatNumber(this.toFixed(item.jumlah_total, 0)) }}</td>
                   <td class="px-3 text-center">
                     <div class="flex item-center justify-center">
                       <button @click="removePendapatan( index )" type="button" class="btn-delete" alt="Hapus">
@@ -196,7 +196,7 @@
                 </tr>
                 <tr class="border-b border-gray-200 bg-gray-50">
                   <td class="text-left font-medium" colspan="3"><span class="font-medium">GRAND TOTAL</span></td>
-                  <td class="text-right font-medium"><span class="font-medium">{{ formatNumber(this.grandTotal) }}</span></td>
+                  <td class="text-right font-medium"><span class="font-medium">{{ formatNumber(toFixed(this.grandTotal, 0)) }}</span></td>
                   <td class="text-center"></td>
                 </tr>
               </tbody>
@@ -466,14 +466,14 @@ export default {
           this.image = this.record.gambar
           this.record.details.forEach(element => {
             this.pendapatanParkir.push({
-              id: element.id,
+              id: element.id_kendaraan,
               jenis_kendaraan: element.jenis_kendaraan,
-              biaya_parkir: this.formatNumber(this.toFixed(element.biaya_parkir, 0)),
-              jumlah_kendaraan: this.formatNumber(this.toFixed(element.jumlah_kendaraan, 0)),
-              jumlah_total: this.formatNumber(this.toFixed(element.total, 0))
+              biaya_parkir: element.biaya_parkir,
+              jumlah_kendaraan: element.jumlah_kendaraan,
+              jumlah_total: element.total
             })
           })
-          this.grandTotal = this.formatNumber(this.toFixed(this.record.grand_total, 0))
+          this.grandTotal = this.record.grand_total
         } else {
           this.isLoading = false
 
@@ -648,14 +648,13 @@ export default {
           this.pendapatanParkir.push({
             id: this.jenisKendaraan.id,
             jenis_kendaraan: this.jenisKendaraan.nama,
-            biaya_parkir: this.biayaParkir,
-            jumlah_kendaraan: this.jumlahKendaraan,
-            jumlah_total: this.jumlahTotal
+            biaya_parkir: this.unformatNumber(this.biayaParkir),
+            jumlah_kendaraan: this.unformatNumber(this.jumlahKendaraan),
+            jumlah_total: this.unformatNumber(this.jumlahTotal)
           })
-          let temp = this.grandTotal ? parseFloat(this.unformatNumber(this.grandTotal)) : 0
-          let jumlahTotal = this.jumlahTotal ? parseFloat(this.unformatNumber(this.jumlahTotal)) : 0
-          let total = temp + jumlahTotal
-          this.grandTotal = this.formatNumber(this.toFixed(total, 0))
+          let temp = this.grandTotal ? parseFloat(this.unformatNumber(this.grandTotal, 0)) : 0
+          let jumlahTotal = this.jumlahTotal ? parseFloat(this.unformatNumber(this.jumlahTotal, 0)) : 0
+          this.grandTotal = temp + jumlahTotal
           this.clearForm()
         }
       } else {
