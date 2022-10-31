@@ -38,7 +38,7 @@
           <thead>
             <tr>
               <th scope="col" class="text-left">Bulan</th>
-              <th scope="col" class="text-left">Total Pengeluaran</th>
+              <th scope="col" class="text-center">Total Pengeluaran</th>
               <th scope="col" class="text-center">Tindakan</th>
             </tr>
           </thead>
@@ -47,15 +47,20 @@
             <tr v-else-if="totalFiltered == 0"><td class="text-center" colspan="5">Tidak ada catatan yang cocok ditemukan</td></tr>
             <tr v-for="(pengeluaran, index) in pengeluaran" :key="pengeluaran.id">
               <td class="text-left">{{ pengeluaran.bulan }} {{ pengeluaran.tahun }}</td>
-              <td class="text-left">Rp. {{ formatNumber(toFixed(pengeluaran.grand_total, 0)) }}</td>
+              <td class="text-right">Rp. {{ formatNumber(toFixed(pengeluaran.grand_total, 0)) }}</td>
               <td class="text-center">
                 <div class="flex item-center justify-center">
-                  <button @click="toggleEdit( pengeluaran.id )" type="button" class="btn-edit" alt="Edit" title="Edit">
-                    <IconEdit />
+                  <button @click="togglePrint( pengeluaran )" type="button" class="btn-edit" alt="Print" title="Print">
+                    <IconPrint />
                   </button>                  
-                  <button @click="confirmDialog( pengeluaran.id )" type="button" class="btn-delete" alt="Hapus" title="Hapus">
-                    <IconTrash />
-                  </button>
+                  <template v-if="userData.jabatan == 'Admin'">
+                    <button @click="toggleEdit( pengeluaran.id )" type="button" class="btn-edit" alt="Edit" title="Edit">
+                      <IconEdit />
+                    </button>
+                    <button @click="confirmDialog( pengeluaran.id )" type="button" class="btn-delete" alt="Hapus" title="Hapus">
+                      <IconTrash />
+                    </button>                  
+                  </template>
                 </div>
               </td>
             </tr>         
@@ -159,7 +164,7 @@
               </div>
               <div class="w-3/12 mb-2">
                 <label for="jumlah_pengeluaran" class="label-control">Jumlah Pengeluaran <span class="text-red-600">*</span></label>
-                <Field id="jumlah_pengeluaran" name="jumlah_pengeluaran" v-model.lazy="jumlahPengeluaran" v-number="number" label="Jumlah Pengeluaran" type="text" rules="" class="form-control" />
+                <Field id="jumlah_pengeluaran" name="jumlah_pengeluaran" v-model.lazy="jumlahPengeluaran" v-number="number" label="Jumlah Pengeluaran" type="text" rules="" class="form-control text-right" />
                 <ErrorMessage name="jumlah_pengeluaran" class="capitalize text-sm text-red-600" />
                 <div v-if="error.jumlah_pengeluaran" class="capitalize text-sm text-red-600"><span>{{ error.jumlah_pengeluaran[0] }}</span></div>
               </div>
@@ -185,7 +190,7 @@
                   <td class="text-left">{{ item.tanggal }}</td>
                   <td class="text-left">{{ item.kode_akun }}</td>
                   <td class="text-left">{{ item.nama_akun }}</td>
-                  <td class="text-right">{{ item.jumlah_pengeluaran }}</td>
+                  <td class="text-right">{{ formatNumber(toFixed(item.jumlah_pengeluaran, 0)) }}</td>
                   <td class="px-3 text-center">
                     <div class="flex item-center justify-center">
                       <button @click="removePengeluaran( index )" type="button" class="btn-delete" alt="Hapus">
@@ -196,7 +201,7 @@
                 </tr>
                 <tr class="border-b border-gray-200 bg-gray-50">
                   <td class="text-left font-medium" colspan="3"><span class="font-medium">GRAND TOTAL</span></td>
-                  <td class="text-right font-medium"><span class="font-medium">{{ formatNumber(this.grandTotal) }}</span></td>
+                  <td class="text-right font-medium"><span class="font-medium">{{ formatNumber(toFixed(this.grandTotal, 0)) }}</span></td>
                   <td class="text-center"></td>
                 </tr>                
               </tbody>
@@ -210,10 +215,66 @@
         </button>
       </template> 
     </modal>
+
+    <!-- Modal Dialog Print -->
+    <modal :show="showModalPrint" @close="showModalPrint = false" addClass="modal-lg" modalOrientation="pt-20 lg:pt-6">
+      <template v-slot:header><h3>{{ modalTitle }}</h3></template>
+      <template v-slot:body>
+        <div id="canvasData" class="bg-white rounded-sm overflow-y-auto">
+          <div class="flex w-full border-b-2 border-gray-900 pb-2 mb-4 gap-2">
+            <div class="w-1/12">
+              <img :src="LogoSource" class="h-16 mx-auto">
+            </div>
+            <div class="w-11/12 text-center">
+              <h1 class="text-xl uppercase">Perusahaan Umum Daerah Pasar Mangu Giri Sedana</h1>
+              <h1 class="text-xl uppercase">Unit Pasar Umum Beringkit</h1>
+              <span>Jalan I Gusti Ngurah Rai Mengwi Badung</span>
+            </div>
+          </div>
+          <div class="block mb-2">
+            <h2 class="font-medium text-center">Laporan Pengeluaran</h2>
+          </div>
+          <div class="block mb-2">
+            <h2 class="text-sm text-left">{{ printData.bulan + ' ' + printData.tahun }}</h2>
+          </div>          
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" class="bg-white text-gray-800 text-left">No</th>
+                <th scope="col" class="bg-white text-gray-800 text-left">Tanggal</th>
+                <th scope="col" class="bg-white text-gray-800 text-left">Pengeluaran</th>
+                <th scope="col" class="bg-white text-gray-800 text-center">Jumlah (Rp.)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-if="printData.details">
+                <tr v-if="printData.details.length == 0"><td class="text-center" colspan="3">Tidak ada data yang dapat ditampilkan</td></tr>
+                <tr v-for="(pengeluaran, index) in printData.details" :key="pengeluaran.id">
+                  <td class="bg-white text-gray-800 border-gray-200 text-left">{{ incrementIndex(index) }}</td>
+                  <td class="bg-white text-gray-800 border-gray-200 text-left">{{ formatedDate(pengeluaran.tanggal) }}</td>
+                  <td class="bg-white text-gray-800 border-gray-200 text-left">{{ pengeluaran.kode_akun + ' ' + pengeluaran.nama_akun }}</td>
+                  <td class="bg-white text-gray-800 border-gray-200 text-right">Rp. {{ formatNumber(toFixed(pengeluaran.jumlah_pengeluaran, 0)) }}</td>
+                </tr>
+                <tr class="border-b border-gray-200 bg-gray-50">
+                  <td class="bg-white text-gray-800 border-gray-200 text-left font-medium" colspan="3"><span class="font-medium">GRAND TOTAL</span></td>
+                  <td class="bg-white text-gray-800 border-gray-200 text-right font-medium"><span class="font-medium">Rp. {{ formatNumber(toFixed(this.printData.grand_total, 0)) }}</span></td>
+                </tr>                   
+              </template>         
+            </tbody>                              
+          </table>          
+        </div>   
+      </template>
+      <template v-slot:footer>
+        <button :disabled="isLoading" type="button" v-print="printObj" class="btn btn--primary" alt="Cetak" title="Cetak">
+          Cetak
+        </button>
+      </template> 
+    </modal>    
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import format from '@/helpers/formatNumber'
 import { Field, Form, ErrorMessage } from "vee-validate"
 import { createToastInterface } from 'vue-toastification'
@@ -224,8 +285,10 @@ import pengeluaranServices from '@/services/pengeluaran/pengeluaranServices'
 import IconPlus from '../icons/IconPlus.vue'
 import IconTrash from '../icons/IconTrash.vue'
 import IconEdit from '../icons/IconEdit.vue'
+import IconPrint from '../icons/IconPrint.vue'
 import IconDateRange from '../icons/IconDateRange.vue'
 import Modal from '../widgets/Modal.vue'
+import Logo from '../../assets/images/logo.png'
 
 export default {
   name: 'PengeluaranListPage',
@@ -236,6 +299,7 @@ export default {
     IconPlus,
     IconTrash,
     IconEdit,
+    IconPrint,
     IconDateRange,
     Modal,
   },
@@ -325,7 +389,25 @@ export default {
         separator: ',',
         prefix: '',
         precision: 2,
-      },       
+      },
+      showModalPrint: false,
+      printData: [],
+      printObj: {
+        id: "canvasData",
+        popTitle: 'Laporan Pengeluaran',
+        beforeOpenCallback (vue) {
+          vue.printLoading = true
+          console.log('打开之前')
+        },
+        openCallback (vue) {
+          vue.printLoading = false
+          console.log('执行了打印')
+        },
+        closeCallback () {
+          console.log('关闭了打印工具')
+        }
+      },
+      LogoSource: Logo,
     }
   },
   methods: {
@@ -469,10 +551,10 @@ export default {
               kode_akun: element.kode_akun,
               nama_akun: element.nama_akun,
               tanggal: dayjs(element.tanggal).format("YYYY-MM-DD"),
-              jumlah_pengeluaran: this.formatNumber(this.toFixed(element.jumlah_pengeluaran, 0))         
+              jumlah_pengeluaran: element.jumlah_pengeluaran       
             })
           })
-          this.grandTotal = this.formatNumber(this.toFixed(this.record.grand_total, 0))
+          this.grandTotal = this.record.grand_total
         } else {
           this.isLoading = false
 
@@ -551,7 +633,6 @@ export default {
       this.grandTotal = ''      
     },
     clearForm(){
-      this.pengeluaranId = ''
       this.akun = ''
       this.tanggal = ''
       this.jumlahPengeluaran = ''
@@ -627,6 +708,7 @@ export default {
       this.modalTitle = 'Tambah Pengeluaran Parkir'
       this.clearHeader()
       this.clearForm()
+      this.pengeluaranId = ''
       this.$refs.akun.$el.focus()
     },
     toggleEdit(id) {
@@ -646,13 +728,12 @@ export default {
           kode_akun: this.akun.kode_akun,
           nama_akun: this.akun.nama_akun,
           tanggal: dayjs(this.tanggal).format("YYYY-MM-DD"),
-          jumlah_pengeluaran: this.jumlahPengeluaran
+          jumlah_pengeluaran: this.unformatNumber(this.jumlahPengeluaran)
         })
 
         let temp = this.grandTotal ? parseFloat(this.unformatNumber(this.grandTotal)) : 0
         let jumlahPengeluaran = this.jumlahPengeluaran ? parseFloat(this.unformatNumber(this.jumlahPengeluaran)) : 0
-        let total = temp + jumlahPengeluaran
-        this.grandTotal = this.formatNumber(this.toFixed(total, 0))
+        this.grandTotal = temp + jumlahPengeluaran
         this.clearForm()
       } else {
         this.toast.error('Silakan lengkapi masukan data terlebih dahulu!')
@@ -660,7 +741,18 @@ export default {
     },
     removePengeluaran(index) {
       this.pengeluaranParkir.splice(index, 1)
-    },  
+    },
+    incrementIndex(key) {
+      return key + 1
+    },    
+    togglePrint(data) {
+      this.printData = data
+      this.showModalPrint = true
+      this.modalTitle = 'Cetak Pengeluaran'      
+    },
+    formatedDate(date) {
+      return dayjs(date).format("DD-MM-YYYY")
+    },
   },
   created() {
     this.fetchData()
@@ -670,6 +762,11 @@ export default {
   unmounted() {
     document.removeEventListener("keydown", this.searchFocus);
   },
+  computed: {
+    ...mapGetters({
+      userData: 'user'
+    })
+  },   
   watch: {
     '$route.query.take': {
       handler: function(take) {
