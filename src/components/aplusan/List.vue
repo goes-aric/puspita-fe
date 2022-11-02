@@ -164,7 +164,7 @@
                 <div v-if="error.jumlah_total" class="capitalize text-sm text-red-600"><span>{{ error.jumlah_total[0] }}</span></div>                
               </div>
               <div class="w-1/12 mb-2">
-                <button type="button" class="btn btn--success mt-6 flex" @click="addPendapatan()">
+                <button :disabled="isLoading" type="button" class="btn btn--success mt-6 flex" @click="addPendapatan()">
                   <span>Tambah</span>
                 </button>
               </div>
@@ -552,7 +552,6 @@ export default {
       this.grandTotal = ''      
     },
     clearForm(){
-      this.pendapatanId = ''
       this.jenisKendaraan = ''
       this.biayaParkir = ''
       this.jumlahKendaraan = ''
@@ -629,6 +628,7 @@ export default {
       this.modalTitle = 'Tambah Aplusan Parkir'
       this.clearHeader()
       this.clearForm()
+      this.pendapatanId = ''
       this.$refs.jenisKendaraan.$el.focus()
     },
     toggleEdit(id) {
@@ -663,6 +663,12 @@ export default {
     },
     removePendapatan(index) {
       this.pendapatanParkir.splice(index, 1)
+
+      let tempTotal = 0
+      this.pendapatanParkir.forEach(item => {
+        tempTotal += parseFloat(this.unformatNumber(item.jumlah_total, 0))    
+      })
+      this.grandTotal = tempTotal
     },
     hitungTotal(event) {
       let jumlahTotal = this.unformatNumber(this.biayaParkir) * this.unformatNumber(event.target.value)
