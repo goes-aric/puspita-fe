@@ -169,7 +169,7 @@
                 <div v-if="error.jumlah_pengeluaran" class="capitalize text-sm text-red-600"><span>{{ error.jumlah_pengeluaran[0] }}</span></div>
               </div>
               <div class="w-1/12 mb-2">
-                <button type="button" class="btn btn--success mt-6 flex" @click="addPengeluaran()">
+                <button :disabled="isLoading" type="button" class="btn btn--success mt-6 flex" @click="addPengeluaran()">
                   <span>Tambah</span>
                 </button>
               </div>
@@ -262,14 +262,14 @@
               </template>         
             </tbody>                              
           </table>
-          <div class="flex w-full mt-2">
+          <div class="flex w-full mt-4">
             <div class="w-1/3"></div>
             <div class="w-1/3"></div>
             <div class="w-1/3 text-center">
-              <span class="block mb-4">KA. UNIT PASAR UMUM BERINGKIT</span>
-              <span class="underline">(I PUTU RUDITA)</span>
+              <span class="block text-sm mb-8">KA. UNIT PASAR UMUM BERINGKIT</span>
+              <span class="text-sm underline">(I PUTU RUDITA)</span>
             </div>
-          </div>                  
+          </div>
         </div>   
       </template>
       <template v-slot:footer>
@@ -749,6 +749,12 @@ export default {
     },
     removePengeluaran(index) {
       this.pengeluaranParkir.splice(index, 1)
+
+      let tempTotal = 0
+      this.pengeluaranParkir.forEach(item => {
+        tempTotal += parseFloat(this.unformatNumber(item.jumlah_pengeluaran, 0))    
+      })
+      this.grandTotal = tempTotal
     },
     incrementIndex(key) {
       return key + 1
