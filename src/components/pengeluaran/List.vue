@@ -262,7 +262,7 @@
               </template>         
             </tbody>                              
           </table>
-          <div class="flex w-full">
+          <div class="flex w-full mt-2">
             <div class="w-1/3"></div>
             <div class="w-1/3"></div>
             <div class="w-1/3 text-center">
