@@ -84,7 +84,7 @@
         <Form id="modalForm" @submit="saveConfirmDialog()">
           <div class="w-full mb-4">
             <label for="kode_akun" class="label-control">Kode Akun <span class="text-red-600">*</span></label>
-            <Field id="kode_akun" name="kode_akun" type="text" ref="kodeAkun" v-model="kodeAkun" label="Kode Akun" rules="required" class="form-control" v-on:keypress="onlyNumber()" :readonly="isEdit" autocomplete="off" />
+            <Field id="kode_akun" name="kode_akun" type="text" ref="kodeAkun" v-model="kodeAkun" label="Kode Akun" rules="required" class="form-control" :readonly="isEdit" autocomplete="off" />
             <ErrorMessage name="kode_akun" class="capitalize text-sm text-red-600" />
             <div v-if="error.kode_akun" class="capitalize text-sm text-red-600"><span>{{ error.kode_akun[0] }}</span></div>        
           </div>          
@@ -349,9 +349,7 @@ export default {
           /* SET LOADING STATE IS FALSE */
           this.isLoading = false
 
-          if (this.akunId) {
-            this.showModal = false
-          }
+          this.showModal = false
 
           /* CLEAR INPUT FORM */
           this.clearForm()
