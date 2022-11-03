@@ -146,7 +146,7 @@
               </div>              
               <div class="w-5/12 mb-2">
                 <label for="akun" class="label-control">Pengeluaran <span class="text-red-600">*</span></label>
-                <VueMultiselect id="akun" name="akun" ref="akun" v-model="akun" :options="akunOptions" :showLabels="false" label="nama_akun" track-by="nama_akun" placeholder="Pilih Jenis Kendaraan">
+                <VueMultiselect id="akun" name="akun" ref="akun" v-model="akun" :options="akunOptions" :showLabels="false" label="nama_akun" track-by="nama_akun" placeholder="Pilih Jenis Pengeluaran">
                   <template v-slot:caret>
                     <div>
                       <div class="multiselect__select">
