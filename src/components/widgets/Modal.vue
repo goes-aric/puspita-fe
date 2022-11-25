@@ -23,7 +23,7 @@
         <div class="w-1/2 items-center right-0">
           <slot name="footer"></slot>
           <button type="button" class="btn btn--secondary ml-2" @click="toggleClose()">
-            Batal
+            Tutup
           </button>                  
         </div>
       </div>
