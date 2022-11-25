@@ -5,7 +5,7 @@
         <h1 class="text-2xl bottom-0">Aplusan Pendapatan Parkir</h1>
       </div>
       <div class="flex items-center right-0 gap-2">
-        <button type="button" class="btn btn--primary flex" @click="toggleNew()">
+        <button v-if="userData.jabatan == 'Petugas'" type="button" class="btn btn--primary flex" @click="toggleNew()">
           <IconPlus />
           <span class="ml-2 md:block hidden">Tambah</span>
         </button>
@@ -58,12 +58,19 @@
               </td>
               <td class="text-center">
                 <div class="flex item-center justify-center">
-                  <button @click="toggleEdit( pendapatan.id )" type="button" class="btn-edit" alt="Edit" title="Edit">
-                    <IconEdit />
-                  </button>                  
-                  <button @click="confirmDialog( pendapatan.id )" type="button" class="btn-delete" alt="Hapus" title="Hapus">
-                    <IconTrash />
-                  </button>
+                  <template v-if="userData.jabatan == 'Petugas'">
+                    <button @click="toggleEdit( pendapatan.id )" type="button" class="btn-edit" alt="Edit" title="Edit">
+                      <IconEdit />
+                    </button>
+                    <button @click="confirmDialog( pendapatan.id )" type="button" class="btn-delete" alt="Hapus" title="Hapus">
+                      <IconTrash />
+                    </button>
+                  </template>
+                  <template v-else>
+                    <button @click="toggleShow( pendapatan.id )" type="button" class="btn-show" alt="Detail" title="Detail">
+                      <IconShow />
+                    </button>
+                  </template>
                 </div>
               </td>
             </tr>         
@@ -121,12 +128,12 @@
                 <div class="md:h-32 border border-dashed border-gray-400 flex items-center justify-center p-1 rounded-sm mb-2">
                   <img class="h-full" :src="image" />
                 </div>
-                <input id="gambar" name="gambar" type="file" ref="gambar" @change="onFileChange" rules="image|ext:jpg,png" label="Gambar" />
+                <input v-if="!isShow" id="gambar" name="gambar" type="file" ref="gambar" @change="onFileChange" rules="image|ext:jpg,png" label="Gambar" />
               </div>
             </div>
           </div>
           <div class="w-full mb-4">
-            <div class="md:flex gap-2">
+            <div class="md:flex gap-2" v-if="!isShow">
               <div class="w-4/12 mb-2">
                 <label for="jenis_kendaraan" class="label-control">Jenis Kendaraan <span class="text-red-600">*</span></label>
                 <VueMultiselect id="jenis_kendaraan" name="jenis_kendaraan" ref="jenisKendaraan" v-model="jenisKendaraan" :options="jenisKendaraanOptions" :showLabels="false" label="nama" track-by="nama" placeholder="Pilih Jenis Kendaraan">
@@ -176,7 +183,7 @@
                   <th scope="col" class="text-center">Biaya Parkir</th>
                   <th scope="col" class="text-center">Jml Kendaraan</th>
                   <th scope="col" class="text-center">Jumlah Total</th>
-                  <th scope="col" class="px-3 text-center">Aksi</th>
+                  <th scope="col" class="px-3 text-center" v-if="!isShow">Aksi</th>
                 </tr>                                                         
               </thead>
               <tbody class="text-gray-600 font-light">
@@ -186,7 +193,7 @@
                   <td class="text-right">{{ this.formatNumber(this.toFixed(item.biaya_parkir, 0)) }}</td>
                   <td class="text-right">{{ this.formatNumber(this.toFixed(item.jumlah_kendaraan, 0)) }}</td>
                   <td class="text-right">{{ this.formatNumber(this.toFixed(item.jumlah_total, 0)) }}</td>
-                  <td class="px-3 text-center">
+                  <td class="px-3 text-center" v-if="!isShow">
                     <div class="flex item-center justify-center">
                       <button @click="removePendapatan( index )" type="button" class="btn-delete" alt="Hapus">
                         <IconTrash />
@@ -197,7 +204,7 @@
                 <tr class="border-b border-gray-200 bg-gray-50">
                   <td class="text-left font-medium" colspan="3"><span class="font-medium">GRAND TOTAL</span></td>
                   <td class="text-right font-medium"><span class="font-medium">{{ formatNumber(toFixed(this.grandTotal, 0)) }}</span></td>
-                  <td class="text-center"></td>
+                  <td class="text-center" v-if="!isShow"></td>
                 </tr>
               </tbody>
             </table>            
@@ -205,7 +212,7 @@
         </Form>     
       </template>
       <template v-slot:footer>
-        <button :disabled="isLoading" type="submit" form="modalForm" class="btn btn--primary" alt="Simpan" title="Simpan">
+        <button v-if="!isShow" :disabled="isLoading" type="submit" form="modalForm" class="btn btn--primary" alt="Simpan" title="Simpan">
           Simpan
         </button>
       </template> 
@@ -214,6 +221,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import format from '@/helpers/formatNumber'
 import { Field, Form, ErrorMessage } from "vee-validate"
 import { createToastInterface } from 'vue-toastification'
@@ -224,6 +232,7 @@ import aplusanServices from '@/services/aplusan/aplusanServices'
 import IconPlus from '../icons/IconPlus.vue'
 import IconTrash from '../icons/IconTrash.vue'
 import IconEdit from '../icons/IconEdit.vue'
+import IconShow from '../icons/IconShow.vue'
 import IconDateRange from '../icons/IconDateRange.vue'
 import Modal from '../widgets/Modal.vue'
 
@@ -236,6 +245,7 @@ export default {
     IconPlus,
     IconTrash,
     IconEdit,
+    IconShow,
     IconDateRange,
     Modal,
   },
@@ -309,6 +319,7 @@ export default {
       modalTitle: '',     
       showModal: false,      
       isEdit: false,
+      isShow: false,
       pendapatanId: '',
       tanggal: '',
       image: '',
@@ -622,6 +633,7 @@ export default {
       return format.onlyNumber()
     },
     toggleNew() {
+      this.isShow = false
       this.isEdit = false
       this.error = []
       this.showModal = true
@@ -632,6 +644,7 @@ export default {
       this.$refs.jenisKendaraan.$el.focus()
     },
     toggleEdit(id) {
+      this.isShow = false
       this.isEdit = true
       this.error = []
       this.showModal = true
@@ -641,6 +654,17 @@ export default {
       this.pendapatanId = id
       this.fetchDataById(id)
     },
+    toggleShow(id) {
+      this.isShow = true
+      this.isEdit = false
+      this.error = []
+      this.showModal = true
+      this.modalTitle = 'Detail Aplusan Parkir'
+      this.clearHeader()    
+      this.clearForm()
+      this.pendapatanId = id
+      this.fetchDataById(id)
+    },    
     addPendapatan() {
       if (this.jenisKendaraan && this.biayaParkir && this.jumlahKendaraan && this.jumlahTotal) {
         const find = this.pendapatanParkir.filter(data => data.id == this.jenisKendaraan.id)
@@ -785,6 +809,11 @@ export default {
       },
       immediate: true
     }                   
-  }
+  },
+  computed: {
+    ...mapGetters({
+      userData: 'user'
+    })
+  },  
 }
 </script>

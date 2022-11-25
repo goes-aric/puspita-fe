@@ -19,7 +19,7 @@
               <span class="relative">Jenis Kendaraan</span>
             </router-link>
           </li>
-          <li v-if="userData.jabatan == 'Petugas'" @click="toggleSidebar">
+          <li v-if="userData.jabatan == 'Petugas' || userData.jabatan == 'Admin'" @click="toggleSidebar">
             <router-link :to="{ name: 'aplusan' }" class="nav-item">
               <span class="relative">Aplusan Pendapatan</span>
             </router-link>
