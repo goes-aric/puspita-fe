@@ -252,7 +252,7 @@
                 <tr v-for="(pengeluaran, index) in printData.details" :key="pengeluaran.id">
                   <td class="bg-white text-gray-800 border-gray-200 text-left">{{ incrementIndex(index) }}</td>
                   <td class="bg-white text-gray-800 border-gray-200 text-left">{{ formatedDate(pengeluaran.tanggal) }}</td>
-                  <td class="bg-white text-gray-800 border-gray-200 text-left">{{ pengeluaran.kode_akun + ' ' + pengeluaran.nama_akun }}</td>
+                  <td class="bg-white text-gray-800 border-gray-200 text-left">{{ pengeluaran.nama_akun }}</td>
                   <td class="bg-white text-gray-800 border-gray-200 text-right">Rp. {{ formatNumber(toFixed(pengeluaran.jumlah_pengeluaran, 0)) }}</td>
                 </tr>
                 <tr class="border-b border-gray-200 bg-gray-50">
