@@ -42,7 +42,12 @@
               <span class="relative">Laporan Pengeluaran</span>
             </router-link>
           </li>
-        </ul>        
+        </ul>
+        <h5 v-if="userData.jabatan == 'Admin' || userData.jabatan == 'Kepala Pasar'" class="nav-header mt-5">
+          <router-link :to="{ name: 'arusKas' }">
+            <span class="relative">Laporan Arus Kas</span>
+          </router-link>
+        </h5>
       </li>
     </ul>
   </nav>

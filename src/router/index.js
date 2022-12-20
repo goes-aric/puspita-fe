@@ -16,6 +16,7 @@ import ListKendaraan from '../components/kendaraan/List.vue'
 import ListAplusan from '../components/aplusan/List.vue'
 import ListRekapitulasi from '../components/rekapitulasi/List.vue'
 import ListPengeluaran from '../components/pengeluaran/List.vue'
+import ListArusKas from '../components/arusKas/List.vue'
 
 let routes = [
   {
@@ -99,6 +100,15 @@ let routes = [
       requiresAuth: true
     }    
   },        
+  {
+    path: '/arus-kas',
+    name: 'arusKas',
+    component: ListArusKas,
+    meta: {
+      title: 'Laporan Arus Kas',
+      requiresAuth: true
+    }
+  },  
   {
     path: "/:catchAll(.*)",
     redirect: { name: 'dashboard' }   
