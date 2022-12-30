@@ -864,7 +864,7 @@ export default {
           const option = this.sortOptions.filter(item => sort_option.includes(item.field))
           this.sortOption = { field: option[0].field, name: option[0].name }          
         } catch (error) {
-          this.sortOption = { field: 'asc', name: 'Ascending' }
+          this.sortOption = { field: 'desc', name: 'Descending' }
         }
       },
       immediate: true
