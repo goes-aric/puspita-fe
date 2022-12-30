@@ -93,7 +93,7 @@
             <div class="flex font-medium border-t py-2">
               <div class="w-1/2">Saldo Kas Akhir</div>
               <div class="w-1/2 text-right">{{ ((saldoAwalPendapatan-saldoAwalPengeluaran)+(totalPendapatan-totalPengeluaran)) < 0 ? '(' + formatNumber(toFixed(((saldoAwalPendapatan-saldoAwalPengeluaran)+(totalPendapatan-totalPengeluaran)), 0)) + ')' : formatNumber(toFixed(((saldoAwalPendapatan-saldoAwalPengeluaran)+(totalPendapatan-totalPengeluaran)), 0)) }}</div>
-            </div>              
+            </div>
           </div>        
         </div>
         <div class="flex w-full mt-6">
@@ -304,6 +304,18 @@ export default {
           })
           this.saldoAwalPengeluaran = totalAwal
           this.totalPengeluaran = total
+
+          if (parseFloat(this.totalPengeluaran) > parseFloat(this.totalPendapatan)) {
+            this.pendapatan = []
+            this.pengeluaran = []
+            this.saldoAwalPendapatan = 0
+            this.saldoAwalPengeluaran = 0
+            this.totalPendapatan = 0
+            this.totalPengeluaran = 0      
+
+            /* THROW ERROR MESSAGES */
+            this.toast.error('Pengeluaran lebih besar daripada pendapatan!')
+          }
         } else {
           this.isLoading =false
 
@@ -337,6 +349,7 @@ export default {
   },
   created() {
     this.fetchDataPendapatan()
+    this.fetchDataPengeluaran()
   },
   watch: {
     filterDate: function() {
