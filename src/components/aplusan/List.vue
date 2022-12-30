@@ -41,12 +41,13 @@
               <th scope="col" class="text-left">Nama Petugas</th>
               <th scope="col" class="text-center">Total Pendapatan</th>
               <th scope="col" class="text-center">Bukti</th>
+              <th scope="col" class="text-center">Status</th>
               <th scope="col" class="text-center">Tindakan</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="pendapatan.length == 0"><td class="text-center" colspan="5">Tidak ada data yang dapat ditampilkan</td></tr>
-            <tr v-else-if="totalFiltered == 0"><td class="text-center" colspan="5">Tidak ada catatan yang cocok ditemukan</td></tr>
+            <tr v-if="pendapatan.length == 0"><td class="text-center" colspan="6">Tidak ada data yang dapat ditampilkan</td></tr>
+            <tr v-else-if="totalFiltered == 0"><td class="text-center" colspan="6">Tidak ada catatan yang cocok ditemukan</td></tr>
             <tr v-for="(pendapatan, index) in pendapatan" :key="pendapatan.id">
               <td class="text-left">{{ pendapatan.tanggal }}</td>
               <td class="text-left">{{ pendapatan.created_user }}</td>
@@ -57,8 +58,11 @@
                 </a>
               </td>
               <td class="text-center">
+                <span class="badge " :class="pendapatan.status ? 'badge--success' : 'badge--danger'">{{ pendapatan.status_text }}</span>
+              </td>
+              <td class="text-center">
                 <div class="flex item-center justify-center">
-                  <template v-if="userData.jabatan == 'Petugas'">
+                  <template v-if="userData.jabatan == 'Petugas' && pendapatan.status == '0'">
                     <button @click="toggleEdit( pendapatan.id )" type="button" class="btn-edit" alt="Edit" title="Edit">
                       <IconEdit />
                     </button>
@@ -66,11 +70,9 @@
                       <IconTrash />
                     </button>
                   </template>
-                  <template v-else>
-                    <button @click="toggleShow( pendapatan.id )" type="button" class="btn-show" alt="Detail" title="Detail">
-                      <IconShow />
-                    </button>
-                  </template>
+                  <button @click="toggleShow( pendapatan.id )" type="button" class="btn-show" alt="Detail" title="Detail">
+                    <IconShow />
+                  </button>
                 </div>
               </td>
             </tr>         
@@ -215,6 +217,9 @@
         <button v-if="!isShow" :disabled="isLoading" type="submit" form="modalForm" class="btn btn--primary" alt="Simpan" title="Simpan">
           Simpan
         </button>
+        <button v-if="status == 0 && userData.jabatan == 'Admin'" :disabled="isLoading" @click="validateConfirmDialog()" type="button" class="btn btn--success" alt="Setujui" title="Setujui">
+          Setujui
+        </button>        
       </template> 
     </modal>
   </div>
@@ -330,6 +335,7 @@ export default {
       jumlahKendaraan: '',
       jumlahTotal: '',
       grandTotal: '',
+      status: '',
       pendapatanParkir: [],
       isLoading: false,
       number: {
@@ -465,6 +471,22 @@ export default {
         }
       })
     },
+    async validateConfirmDialog() {
+      this.$swal.fire({
+        title: 'Konfirmasi Data',
+        text: "Anda yakin akan menyetujui data aplusan parkir?",
+        icon: 'question',
+        showCancelButton: true,
+        cancelButtonColor: '#4b5563',
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Batal'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          /* CALL CREATE FUNCTION */
+          this.validate()
+        }
+      })
+    },    
     async fetchDataById(id){
       try {
         this.isLoading = true
@@ -485,6 +507,7 @@ export default {
             })
           })
           this.grandTotal = this.record.grand_total
+          this.status = this.record.status
         } else {
           this.isLoading = false
 
@@ -556,6 +579,43 @@ export default {
         this.toast.error(error.message)        
       }
     },
+    async validate(){
+      try {
+        this.isLoading = true
+
+        const response = await aplusanServices.validate(this.pendapatanId)
+        if (response.data.status === 'success') {
+          /* SET LOADING STATE IS FALSE */
+          this.isLoading = false
+
+          this.showModal = false
+
+          /* EMPTY ERRORS VARIABLE */
+          this.error = []
+          
+          /* SUCCESS MESSAGES */
+          this.toast.success(response.data.message)
+
+          /* RELOAD DATA */
+          this.fetchData()
+        } else {
+          /* SET LOADING STATE IS FALSE */
+          this.isLoading = false
+
+          /* EMPTY ERRORS VARIABLE */
+          this.error = []
+
+          /* ELSE, THROW ERROR MESSAGES */
+          this.toast.error(response.data.message)        
+        }        
+      } catch (error) {
+        /* SET LOADING STATE IS FALSE */
+        this.isLoading = false
+
+        /* THROW ERROR MESSAGES */
+        this.toast.error(error.message)        
+      }
+    },    
     clearHeader(){
       this.tanggal = new Date()
       this.image = ''

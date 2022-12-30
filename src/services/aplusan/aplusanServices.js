@@ -16,6 +16,9 @@ export default {
   update(id, payload){
     return axios.post(`/pendapatan/${id}`, payload)
   },
+  validate(id){
+    return axios.put(`/pendapatan/validate/${id}`)
+  },  
   delete(id){
     return axios.delete(`/pendapatan/${id}`)
   }, 
